@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/l/:id", "destination": "/api/redirect?id=:id" },
+    { "source": "/", "destination": "/public/index.html" }
+  ]
+}
