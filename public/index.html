@@ -9,63 +9,66 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
         body { background-color: #1a1a1a; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px 0; }
         .container { width: 100%; max-width: 450px; padding: 20px; }
-        h2 { text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 25px; }
-        .form-card { background-color: #121212; border: 1px solid #2d2d2d; border-radius: 12px; padding: 24px; }
+        h2 { text-align: center; font-size: 26px; font-weight: 700; margin-bottom: 25px; color: #fff; }
+        .form-card { background-color: #121212; border: 1px solid #2d2d2d; border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .form-group { margin-bottom: 18px; }
-        label { display: block; font-size: 14px; margin-bottom: 8px; color: #e0e0e0; }
-        input[type="text"], input[type="url"] { width: 100%; background-color: #2a2a2a; border: 1px solid #444444; border-radius: 6px; padding: 12px; color: #ffffff; outline: none; }
-        .link-preview { font-size: 13px; color: #3b82f6; margin-top: 6px; word-break: break-all; }
-        .divider { text-align: center; margin: 15px 0; font-size: 12px; color: #888888; font-weight: bold; }
-        .file-input-wrapper { background-color: #2a2a2a; border: 1px solid #444444; border-radius: 6px; padding: 12px; display: flex; align-items: center; gap: 10px; }
-        input[type="file"] { display: none; }
-        .file-label-btn { background-color: #222222; color: #ffffff; padding: 8px 16px; border-radius: 6px; cursor: pointer; border: 1px solid #444444; }
-        .submit-btn { width: 100%; background-color: #2563eb; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .success-box { display:none; background: #065f46; color: white; padding: 10px; border-radius: 5px; margin-top: 10px; text-align: center; }
+        label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; color: #bbb; }
+        input[type="text"], input[type="url"] { width: 100%; background-color: #2a2a2a; border: 1px solid #444444; border-radius: 6px; padding: 12px; color: #ffffff; font-size: 14px; outline: none; transition: border-color 0.2s; }
+        input[type="text"]:focus, input[type="url"]:focus { border-color: #2563eb; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .submit-btn { flex: 2; background-color: #2563eb; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .clear-btn { flex: 1; background-color: #333; color: white; border: 1px solid #444; padding: 14px; border-radius: 8px; font-size: 15px; cursor: pointer; }
+        .submit-btn:hover { background-color: #1d4ed8; }
+        .submit-btn:disabled { background-color: #555; cursor: not-allowed; }
+
+        #copyBtn { display: none; width: 100%; background-color: #059669; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; }
+        #copyBtn.copied { background-color: #10b981; }
     </style>
 </head>
 <body>
+
     <div class="container">
         <h2>Generate Campaign Link</h2>
+
         <form class="form-card" id="campaignForm">
             <div class="form-group">
                 <label>Short Code Path *</label>
                 <input type="text" id="shortCode" placeholder="e.g. specialized-deal" required>
-                <div class="link-preview">Link: <span id="liveLink">...</span></div>
             </div>
+
             <div class="form-group">
                 <label>Destination Target URL *</label>
-                <input type="url" id="targetUrl" placeholder="https://..." required>
+                <input type="url" id="targetUrl" placeholder="https://your-offer-link.com" required>
             </div>
+
             <div class="form-group">
-                <label>Option A: Direct Image URL</label>
-                <input type="url" id="imageUrl" placeholder="https://...">
+                <label>Image URL *</label>
+                <input type="url" id="imageUrl" placeholder="https://site.com/image.jpg" required>
             </div>
-            <div class="divider">— OR —</div>
+
             <div class="form-group">
-                <label>Option B: Upload Image</label>
-                <div class="file-input-wrapper">
-                    <label for="imageFile" class="file-label-btn">Choose file</label>
-                    <input type="file" id="imageFile" accept="image/*">
-                    <span id="fileName" style="color:#757575">No file chosen</span>
-                </div>
+                <label>Title</label>
+                <input type="text" id="feedTitle" placeholder="Catchy offer title">
             </div>
-            <div class="form-group">
-                <label>Title (Optional)</label>
-                <input type="text" id="feedTitle" placeholder="Offer Title">
-            </div>
+
             <div class="form-group">
                 <label>Description (Optional)</label>
-                <input type="text" id="feedDesc" placeholder="Brief info...">
+                <input type="text" id="feedDesc" placeholder="Brief description for preview">
             </div>
-            <button type="submit" class="submit-btn" id="submitBtn">Generate & Deploy Link</button>
-            <div id="successMsg" class="success-box">Campaign Live! Copy the link above.</div>
+
+            <div class="btn-group">
+                <button type="submit" class="submit-btn" id="submitBtn">Generate & Deploy</button>
+                <button type="button" class="clear-btn" id="clearBtn">Clear</button>
+            </div>
+
+            <button type="button" id="copyBtn">Click to Copy Link</button>
         </form>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCUcEwxRKj4HLaFjVCUu5QAegU1vlxZowo",
@@ -80,54 +83,65 @@
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        const storage = getStorage(app);
 
+        const form = document.getElementById('campaignForm');
         const shortCodeInput = document.getElementById('shortCode');
-        const liveLink = document.getElementById('liveLink');
-        const imageFileInput = document.getElementById('imageFile');
+        const submitBtn = document.getElementById('submitBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const clearBtn = document.getElementById('clearBtn');
 
-        shortCodeInput.addEventListener('input', () => {
-            const val = shortCodeInput.value.trim().replace(/\s+/g, '-').toLowerCase();
-            const domain = window.location.origin;
-            liveLink.innerText = val ? `${domain}/l/${val}` : "...";
-        });
+        let finalGeneratedLink = "";
 
-        imageFileInput.addEventListener('change', (e) => {
-            document.getElementById('fileName').innerText = e.target.files[0].name;
-        });
-
-        document.getElementById('campaignForm').addEventListener('submit', async (e) => {
+        // ফর্ম সাবমিট
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.innerText = "Deploying...";
-            btn.disabled = true;
-
+            
             const shortCode = shortCodeInput.value.trim().replace(/\s+/g, '-').toLowerCase();
-            const file = imageFileInput.files[0];
-            let imageUrl = document.getElementById('imageUrl').value;
+            const domain = window.location.origin;
+            finalGeneratedLink = `${domain}/l/${shortCode}`;
+
+            submitBtn.innerText = "Deploying...";
+            submitBtn.disabled = true;
 
             try {
-                if (file) {
-                    const storageRef = sRef(storage, 'campaign_images/' + shortCode);
-                    const snapshot = await uploadBytes(storageRef, file);
-                    imageUrl = await getDownloadURL(snapshot.ref);
-                }
-
                 await set(ref(database, 'campaigns/' + shortCode), {
                     targetUrl: document.getElementById('targetUrl').value,
-                    imageUrl: imageUrl || "",
+                    imageUrl: document.getElementById('imageUrl').value,
                     title: document.getElementById('feedTitle').value || "Special Offer",
-                    description: document.getElementById('feedDesc').value || "Click to see details"
+                    description: document.getElementById('feedDesc').value || "Click to see details",
+                    timestamp: Date.now()
                 });
 
-                document.getElementById('successMsg').style.display = 'block';
-                btn.innerText = "Generate & Deploy Link";
-                btn.disabled = false;
-                alert('Campaign successfully created!');
+                submitBtn.innerText = "Campaign Live!";
+                copyBtn.style.display = "block";
+                copyBtn.innerText = "Click to Copy Link";
+                copyBtn.classList.remove('copied');
+
             } catch (error) {
-                alert('Error: ' + error.message);
-                btn.disabled = false;
+                alert("Error: " + error.message);
+                submitBtn.innerText = "Generate & Deploy";
+                submitBtn.disabled = false;
             }
+        });
+
+        // কপি বাটন লজিক
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(finalGeneratedLink).then(() => {
+                copyBtn.innerText = "Link Copied!";
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy Link Again";
+                }, 2000);
+            });
+        });
+
+        // ক্লিয়ার বাটন লজিক
+        clearBtn.addEventListener('click', () => {
+            form.reset();
+            copyBtn.style.display = "none";
+            submitBtn.innerText = "Generate & Deploy";
+            submitBtn.disabled = false;
+            finalGeneratedLink = "";
         });
     </script>
 </body>
